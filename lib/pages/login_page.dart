@@ -128,7 +128,7 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-    Widget _buildClearButton(double width,double height)
+  Widget _buildClearButton(double width,double height)
   {
     return SizedBox(
       width: width,

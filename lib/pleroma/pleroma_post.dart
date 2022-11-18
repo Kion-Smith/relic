@@ -3,74 +3,90 @@ import 'package:relic/pleroma/pleroma_data.dart';
 
 class PleromaPost
 {
-  final PleromaAccount acount;
-  final String? application;
-  final bool bookmarked;
-  final Map<String,dynamic>? card;
-  final String content; // maybe make this a dom objec?
-  final DateTime postedAt;
-  final List<String> emojis;
+  // ignore: todo
+  //TODO make dynamic lists/maps into a custom data object. I gain nothing from having these items being inside of a map
 
-  final bool favourited;
-  final int favoritedCount;
-  final String id;
-  final String? replyAccountId;
-  final String? replyPostId;
-  final String? language; // maybe this should be an enum
+  final PleromaAccount _account;
+  final List<dynamic>? _application;
+  final bool _bookmarked;
+  final Map<String,dynamic>? _card; // <- this contains information that can be used to create those embeded link things you see on twitter
+  final String _content; // maybe make this a dom objec?
+  final DateTime _postedAt;
+  final List<dynamic> _emojis;
 
-  final List<Map<String,dynamic>> mediaAttachment;
-  final List<PleromaAccount> mentionedAccounts;
-  final bool isPinned;
-  final Map<String,dynamic>? poll; //??
-  final Map<String,dynamic> reblog;
-  final bool reblogged;
-  final int reblogCount;
-  final int replyCount;
-  final bool isSenstive;
-  final String spolierText;
-  final List<String> tags;
-  final String text;
-  final Uri uri;
-  final Uri url;
-  final String visibility; // this should be a enum but idk what the visbiligies are
+  final bool _favourited;
+  final int _favoritedCount;
+  final String _id;
+  final String? _replyAccountId;
+  final String? _replyPostId;
+  final String? _language; // maybe this should be an enum
 
+  final List<Map<String,dynamic>> _mediaAttachment;
+  final List<PleromaAccount> _mentionedAccounts;
+  final bool _isPinned;
+  final Map<String,dynamic>? _poll; //??
+  final Map<String,dynamic> _reblog;
+  final bool _reblogged;
+  final int _reblogCount;
+  final int _replyCount;
+  final bool _isSenstive;
+  final String _spolierText;
+  final List<dynamic> _tags;
+  final String _text;
+  final Uri _uri;
+  final Uri _url;
+  final String _visibility; // this should be a enum but idk what the visbiligies are
 
-  final PleromaData? pleromaData;
+  final String? _error;
+
+  //Might not always be on a pleroma node on the fediverse
+  final PleromaData? _pleromaData;
 
   PleromaPost(
-    this.acount, 
-    this.application, 
-    this.bookmarked, 
-    this.card, 
-    this.content, 
-    this.postedAt, 
-    this.emojis, 
-    this.favourited, 
-    this.favoritedCount, 
-    this.id, 
-    this.replyAccountId, 
-    this.replyPostId, 
-    this.language, 
-    this.mediaAttachment, 
-    this.mentionedAccounts, 
-    this.isPinned, 
-    this.pleromaData,
-    this.poll, 
-    this.reblog, 
-    this.reblogged, 
-    this.reblogCount, 
-    this.replyCount, 
-    this.isSenstive, 
-    this.spolierText, 
-    this.tags, 
-    this.text, 
-    this.uri, 
-    this.url, 
-    this.visibility, 
+    this._account, 
+    this._application, 
+    this._bookmarked, 
+    this._card, 
+    this._content, 
+    this._postedAt, 
+    this._emojis, 
+    this._favourited, 
+    this._favoritedCount, 
+    this._id, 
+    this._replyAccountId, 
+    this._replyPostId, 
+    this._language, 
+    this._mediaAttachment, 
+    this._mentionedAccounts, 
+    this._isPinned, 
+    this._pleromaData,
+    this._poll, 
+    this._reblog, 
+    this._reblogged, 
+    this._reblogCount, 
+    this._replyCount, 
+    this._isSenstive, 
+    this._spolierText, 
+    this._tags, 
+    this._text, 
+    this._uri, 
+    this._url, 
+    this._visibility, 
+    this._error
     );
 
   factory PleromaPost.fromJson(Map<String,dynamic> json)
   {
+
+    List<dynamic> applicationsList = [];
+    if(json['application'] != null)
+    {
+      for(int i =0;i<json['application'].length;i++)
+      {
+        applicationsList.add(json['application'][i]);
+      }
+    }
+
     List<PleromaAccount> mentionedAccounts = [];
     for(int i =0;i<json['mentions'].length;i++)
     {
@@ -78,7 +94,8 @@ class PleromaPost
     }
 
 
-    List<String> emojiList= [];
+    //on cdrom this was a map<String,dynamic>
+    List<dynamic> emojiList= [];
     for(int i = 0;i<json['emojis'].length;i++)
     {
       emojiList.add(json['emojis'][i]);
@@ -91,7 +108,8 @@ class PleromaPost
       
     }
 
-    List<String> tagsList = [];
+    ////on cdrom this was a map<String,dynamic>
+    List<dynamic> tagsList = [];
     for(int i =0;i<json['tags'].length;i++)
     {
       tagsList.add(json['tags'][i]);
@@ -103,25 +121,27 @@ class PleromaPost
     //   reblogList.add(json['reblog'][i]);
     // }
 
-    PleromaData? pleromaData = null;
+    PleromaData? pleromaData;
     try
     {
       pleromaData = PleromaData.fromJson(json['pleroma']);
     }
     catch(e)
     {
-      print("Could not use pleroma data"+e.toString());
+      //print("Could not use pleroma data"+e.toString());
     }
      
     return PleromaPost(
       PleromaAccount.fromJson(json['account']),
-      json['application'],
-      json['bookmarked'],
+
+      //on mastadon this is a map<string, dynamic>
+    applicationsList,
+      json['bookmarked'] ?? false,
       json['card'] ,
       json['content'],
       DateTime.parse(json['created_at']),
       emojiList,
-      json['favourited'],
+      json['favourited'] ?? false,
       json['favourites_count'],
       json['id'],
       json['in_reply_to_account_id'],
@@ -129,11 +149,11 @@ class PleromaPost
       json['language'],
       mediaAttachmentsList,
       mentionedAccounts, // come back to this
-      json['muted'],
+      json['muted'] ?? false,
       pleromaData, // come back to this
       json['poll'],
       json['reblog'] ?? {},
-      json['reblogged'],
+      json['reblogged'] ?? false,
       json['reblogs_count'],
       json['replies_count'],
       json['sensitive'],
@@ -143,7 +163,45 @@ class PleromaPost
       Uri.parse(json['uri']),
       Uri.parse(json['url']),
       json['visibility'],
+      json['error']
     );
   }
+
+
+ PleromaAccount get getAccount=> _account;
+ List<dynamic>? get getApplication => _application;
+ bool get getIsBookmarked =>_bookmarked;
+ Map<String,dynamic>? get getCardInformation => _card;
+ String get getContent => _content; // maybe make this a dom objec?
+ DateTime get getTimePosted =>_postedAt;
+ List<dynamic> get getEmojis => _emojis;
+
+ bool get getIsFavourited => _favourited;
+ int get getFavouritedCount =>_favoritedCount;
+ String get getId =>_id;
+ String? get getReplyAccountId =>_replyAccountId;
+ String? get getReplyPostId => _replyPostId;
+ String? get getLanguage =>_language; // maybe this should be an enum
+
+ List<Map<String,dynamic>> get getMediaAttachments => _mediaAttachment;
+ List<PleromaAccount> get getMentionedAccounts => _mentionedAccounts;
+ bool get getIsPinned =>_isPinned;
+ Map<String,dynamic>? get getPollInfomration => _poll; //??
+ Map<String,dynamic> get getReblogContent =>_reblog;
+ bool get getIsReblogged => _reblogged;
+ int get getReblogCount =>_reblogCount;
+ int get getReplyCount => _replyCount;
+ bool get getIsSensitive =>_isSenstive;
+ String get getIsSpolierText =>_spolierText;
+ List<dynamic> get getTags =>_tags;
+ String get getText =>_text;
+ Uri get getUri =>_uri;
+ Uri get getUrl =>_url;
+ String get getVisibility =>_visibility;
+ String? get getErrorMsg => _error;
+
+ bool hasError() => _error == null;
+ 
+
 
 }

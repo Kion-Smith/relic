@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:relic/pages/home_page.dart';
 import 'package:relic/pleroma/pleroma_account.dart';
 import 'package:relic/pleroma/pleroma_auth_data.dart';
 import 'package:relic/pleroma/pleroma_auth_storage.dart';
 import 'package:relic/pleroma/pleroma_post.dart';
 import 'package:relic/pleroma/utils/pleroma_restcalls.dart';
-import 'package:relic/pages/timeline.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'login_page.dart';
@@ -54,8 +54,6 @@ class _AuthorizationWebPageState extends State<AuthorizationWebPage>
             PleromaAuthenticationStorage.clearStorage();
             Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
           }
-
-          //PleromaAuthenticationStorage.setFediverseNode(domain);
            //do login here
           await getAndStoreAuthorizationToken(widget.authorization,token.replaceAll('"', ""));
 
@@ -67,7 +65,7 @@ class _AuthorizationWebPageState extends State<AuthorizationWebPage>
             Navigator.push(
               context, 
               MaterialPageRoute(
-                builder: (context) => Timeline(posts: posts, user: user)
+                builder: (context) => HomePage(user: user, posts: posts)//Timeline(posts: posts, user: user)
               )
             );
           }
@@ -78,12 +76,6 @@ class _AuthorizationWebPageState extends State<AuthorizationWebPage>
           }          
           
         }
-        // else
-        // {
-        //   print("Could not sign into authrization page");
-        //   PleromaAuthenticationStorage.clearStorage();
-        //   Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-        // }
       },
       ),
   );

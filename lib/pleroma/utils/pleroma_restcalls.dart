@@ -22,6 +22,7 @@ String scope = "&scope=";
 
 String login = "/oauth/token";
 String timeline="/api/v1/timelines/home";
+String publicTimeline="/api/v1/timelines/public";
 String verifyUser = "/api/v1/accounts/verify_credentials";
 String registerApp = "/api/v1/apps/";
 String getAccount ="/api/v1/accounts/";
@@ -44,19 +45,6 @@ Future<PleromaAccount> getAccountDetails(String account) async
     throw Exception("Failed to retrive from this account from https://$domain$getAccount$account");
   }
 }
-
-// Future<PleromaAccount> getAccountDetailsFromURL(Uri url) async 
-// {
-//   final response = await http.get(url);
-//   if(response.statusCode == 200)
-//   {
-//     return PleromaAccount.fromJson(jsonDecode(response.body));
-//   }
-//   else
-//   {
-//     throw Exception("Failed to retrive from this account");
-//   }
-// }
 
 // Was getClientTokens
 Future<PleromaAuth> registerRelicApp() async
@@ -96,7 +84,7 @@ Future<String> getAuthorizationURL(PleromaAuth auth) async
   String? domain = await PleromaAuthenticationStorage.getFediverseNode();
   if(domain == null)
   {
-    throw Exception("Domain Name was null");
+    throw MissingDomainNameExcepetion("Domain name was null");
   }
 
   return "https://"+domain+authorize+clientId+auth.clientID+redirectReq+
@@ -134,19 +122,19 @@ Future<void> getAndStoreAuthorizationToken(PleromaAuth auth, String authorizatio
   }
 }
 
-Future<List<PleromaPost>?> getUsersMostRecentTimeline() async
+Future<List<PleromaPost>> getUsersMostRecentTimeline() async
 {
   
   String? domain = await PleromaAuthenticationStorage.getFediverseNode();
   if(domain == null)
   {
-    throw Exception("Domain Name was null");
+    throw MissingDomainNameExcepetion("Domain name was null");
   }
 
   String? acccesToken = await PleromaAuthenticationStorage.getAccessToken();
   if(acccesToken == null)
   {
-    Exception("There was no access token");
+    throw InvalidAccessTokenException("There was no access token");
   }
 
 
@@ -169,9 +157,39 @@ Future<List<PleromaPost>?> getUsersMostRecentTimeline() async
   }
   else
   {
-    Exception("Unable to access timeline. ${response.body}");
+    throw MissingTimelineException("Unable to access timeline because ${response.body}");
   }
-  return null;
+  
+}
+
+//maybe make isonlylocal an enum to handle special cases see https://docs.joinmastodon.org/methods/timelines/ for more information
+Future<List<PleromaPost>> getFediversePublicTimeline(String domainName, bool isOnlyLocal, bool isOnlyMedia) async
+{
+
+  if(domainName == null || domainName.isEmpty)
+  {
+    throw MissingDomainNameExcepetion("Missing a domain name");
+  }
+
+  //since there are no bodys we do it like this manually
+  http.Response response = await http.get(
+    Uri.parse("https://$domainName$publicTimeline?local=$isOnlyLocal&only_media=$isOnlyMedia"),);
+
+  switch(response.statusCode)
+  {
+    case 200:
+      List<dynamic> json = jsonDecode(response.body);
+      List<PleromaPost> posts = [];
+      for(int i =0; i<json.length;i++)
+      {
+        posts.add(PleromaPost.fromJson(json[i]));
+      }
+      return posts;
+    case 401: //Authorization error
+      throw AuthorizationException("Not authorized. ${response.body}");
+    default:
+     throw Exception("Unable to access timeline. ${response.body}");
+  }
   
 }
 
@@ -205,4 +223,36 @@ Future<PleromaAccount> verifyUserAccount() async
     throw Exception("Failed to verify the users account. ${response.body}");
   }
 
+}
+
+
+class MissingDomainNameExcepetion implements Exception
+{
+ String cause;
+ MissingDomainNameExcepetion(this.cause); 
+}
+
+class UnknowDomainNameExcepetion implements Exception
+{
+ String cause;
+ UnknowDomainNameExcepetion(this.cause); 
+}
+
+class InvalidAccessTokenException implements Exception
+{
+  String cause;
+  InvalidAccessTokenException(this.cause);  
+}
+
+class MissingTimelineException implements Exception
+{
+  String cause;
+  MissingTimelineException(this.cause);  
+}
+
+class AuthorizationException implements Exception
+{
+  String cause;
+
+  AuthorizationException(this.cause);
 }

@@ -15,6 +15,7 @@ class PleromaAccount
    bool? _isLocked;
    String? _bio;
   /* 
+  // ignore: todo
   TODO add more information about an account
   */
   Uri? _url;

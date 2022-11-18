@@ -4,8 +4,7 @@ import 'package:relic/pleroma/pleroma_account.dart';
 import 'package:relic/pleroma/pleroma_auth_storage.dart';
 import 'package:relic/pleroma/pleroma_post.dart';
 import 'package:relic/pleroma/utils/pleroma_restcalls.dart';
-import 'package:relic/pages/timeline.dart';
-
+import 'home_page.dart';
 
 class LoadingScreen extends StatefulWidget 
 {
@@ -39,7 +38,7 @@ class _LoadingState extends State<LoadingScreen>
       Navigator.push(
         context, 
         MaterialPageRoute(
-          builder: (context) => Timeline(posts: posts, user: user)
+          builder: (context) => HomePage(posts: posts, user: user)//Timeline(posts: posts, user: user)
           )
       );
     }
